@@ -85,4 +85,7 @@ public sealed class StubContentMetadataClient : IContentMetadataClient
 {
     public Task<ContentItem?> GetContentAsync(string contentId, CancellationToken ct = default)
         => Task.FromResult(StubData.Content.GetValueOrDefault(contentId));
+
+    public Task<IReadOnlyList<ContentItem>> GetCatalogAsync(CancellationToken ct = default)
+        => Task.FromResult<IReadOnlyList<ContentItem>>(StubData.Content.Values.ToList());
 }

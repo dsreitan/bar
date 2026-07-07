@@ -27,4 +27,12 @@ public interface IPublicationRegistryClient
 public interface IContentMetadataClient
 {
     Task<ContentItem?> GetContentAsync(string contentId, CancellationToken ct = default);
+
+    /// <summary>
+    /// The content catalog as (id, tags) — used by license preview and, later,
+    /// the materializer. In production this is the CMS search/export API if one
+    /// exists, or the tag index the BFF accumulates from live traffic (every
+    /// served request teaches it one item's tags) when it doesn't.
+    /// </summary>
+    Task<IReadOnlyList<ContentItem>> GetCatalogAsync(CancellationToken ct = default);
 }

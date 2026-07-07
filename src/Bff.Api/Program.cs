@@ -67,6 +67,47 @@ app.MapGet("/internal/entitlements/why", async (
     });
 });
 
+// License dry run: what would this descriptor unlock? Test a new license
+// BEFORE provisioning it, or audit an existing publication by id. Also returns
+// the descriptor translated to a search filter, for pushing entitlements into
+// a search index. Internal tooling, like the why endpoint.
+app.MapGet("/internal/entitlements/preview", async (
+    string? descriptor,
+    int? publicationId,
+    IPublicationRegistryClient registry,
+    IContentMetadataClient contentService,
+    CancellationToken ct) =>
+{
+    if (descriptor is null && publicationId is null)
+        return Results.BadRequest(new { error = "pass ?descriptor=... (a new license to test) or ?publicationId=... (an existing one)" });
+
+    if (publicationId is not null)
+    {
+        var publications = await registry.GetPublicationsAsync(ct);
+        if (!publications.TryGetValue(publicationId.Value, out var publication))
+            return Results.NotFound(new { error = $"publication {publicationId} is not in the registry" });
+        descriptor = publication.Descriptor;
+    }
+
+    var catalog = await contentService.GetCatalogAsync(ct);
+    var preview = LicensePreviewer.Preview(descriptor, catalog.Select(c => (c.ContentId, c.Title, c.Labels)));
+
+    return Results.Ok(new
+    {
+        descriptor,
+        preview.SyntaxValid,
+        grants = preview.Grants.ToDictionary(kv => kv.Key.ToString(), kv => kv.Value),
+        preview.Warnings,
+        searchFilter = preview.Filter is null ? null : new
+        {
+            clauses = preview.Filter.Clauses,
+            query = preview.Filter.ToQueryString(),
+        },
+        matchCount = preview.Matches.Count,
+        matches = preview.Matches,
+    });
+});
+
 app.Run();
 
 static async Task<DecisionTrace> EvaluateAsync(

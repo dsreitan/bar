@@ -206,6 +206,25 @@ public class PropertyTests
     }
 
     [Test]
+    public void The_search_filter_translation_is_faithful_to_the_matcher()
+    {
+        // The preview/search-filter path and the request-time matcher must be
+        // the same semantics — otherwise "what the license unlocks" and "what
+        // the user can open" drift apart, which is the disease this repo cures.
+        Gen.Select(GenValidDescriptor, GenContentLabels, (descriptor, content) => (descriptor, content))
+            .Sample(t =>
+            {
+                var (contentTags, _) = ContentTagTransport.ToLicenseTagSet(t.content);
+                var parsed = DescriptorParser.Parse(t.descriptor);
+                var filter = LicenseSearchFilter.From(parsed);
+                var check = EntitlementEvaluator.CheckPublication(new PublicationRecord(1, "p", t.descriptor), contentTags);
+
+                filter.Matches(contentTags).Should().Be(check.HasAccess,
+                    $"filter and matcher disagree for [{t.descriptor}] vs [{contentTags}]");
+            }, iter: Iterations);
+    }
+
+    [Test]
     public void Normalization_is_idempotent_and_the_parser_never_throws()
     {
         Gen.String[0, 30].Sample(raw =>

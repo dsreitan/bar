@@ -167,6 +167,25 @@ audit-logged.) The existing App Insights reason metric keeps working — the
 reason enum is now just a projection of the trace, and it can finally carry
 *which key* failed as a dimension.
 
+Its sibling is the **preview endpoint** — the same core pointed the other
+way:
+
+```
+GET /internal/entitlements/preview?descriptor=...     (dry-run a NEW license)
+GET /internal/entitlements/preview?publicationId=...  (audit an existing one)
+```
+
+Given a descriptor, it returns every catalog item the license would unlock
+(with per-key match reasons), warnings (invalid syntax = whole-catalog
+fail-open, unknown keys, dead grants), and the descriptor translated into a
+**search filter** for pushing entitlements into a search index. The
+translation preserves the matcher's non-obvious rule — a constraint only
+binds when the content carries that key, so `Subject=naturfag` must NOT
+exclude content with no Subject tag — and a property test proves filter and
+matcher never disagree. Preview is also the materializer from
+docs/ALTERNATIVE-LICENSE-MODELS.md scoped to one publication, run on demand:
+license setup can test a publication *before* provisioning it.
+
 ## Core decision 3: the testing strategy
 
 Bottom-heavy: nearly all value is in tests of the pure core. The existing

@@ -170,6 +170,15 @@ Note the linter's highest-value checks — invalid descriptor syntax
 unknown publication ids — need **only** the publication registry and license
 data the BFF already receives. They can run today.
 
+The stepping stone between "nothing" and "full ledger" already exists in the
+POC: the **preview endpoint** (`/internal/entitlements/preview`) is the
+materializer scoped to a single publication, run on demand against whatever
+content index is available — CMS search API, an export, or the
+traffic-accumulated one. It answers "what does this license unlock?" before
+provisioning, and its search-filter translation (property-tested to agree
+with the runtime matcher) is the exact query to hand a search index when the
+frontend should only *show* content the user can open.
+
 ## When ReBAC (Zanzibar-style) is the better answer
 
 If the roadmap grows *relations* — teacher shares a resource with a class,

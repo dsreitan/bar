@@ -54,6 +54,21 @@ Other stub users: `alice` (Multi + Refleks naturfag), `carol` (publication
 with invalid descriptor — fails open by design, marked in the trace),
 `dave` (no license).
 
+Dry-run a **new license before provisioning it** — which content would it
+unlock, and what search filter does it translate to:
+
+```bash
+curl "http://localhost:5199/internal/entitlements/preview?descriptor=LearningMaterial%3Drefleks%3BSubject%3Dnaturfag"
+curl "http://localhost:5199/internal/entitlements/preview?publicationId=560002"   # audits the planted invalid-syntax publication
+```
+
+The search-filter translation is property-tested to agree with the matcher —
+including the trap a hand-written filter falls into: `Subject=naturfag` must
+not exclude content that has no Subject tag at all. The catalog behind
+preview is the CMS search/export API when available, or the tag index the
+BFF accumulates from live traffic (each served request teaches it one item's
+tags) when it isn't.
+
 ## Capturing an incident as a regression test
 
 Take the license + content tags from a `why` response, add a YAML entry under

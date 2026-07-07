@@ -76,6 +76,32 @@ public class ApiSmokeTests
     }
 
     [Test]
+    public async Task Preview_endpoint_dry_runs_a_new_license_against_the_catalog()
+    {
+        var descriptor = Uri.EscapeDataString("LearningMaterial=refleks;Subject=naturfag");
+        var response = await _client.GetAsync($"/internal/entitlements/preview?descriptor={descriptor}");
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var trace = JsonDocument.Parse(await response.Content.ReadAsStringAsync()).RootElement;
+
+        trace.GetProperty("matches").EnumerateArray()
+            .Select(m => m.GetProperty("contentId").GetString())
+            .Should().Contain("refleks-naturfag-kap1")
+            .And.NotContain("refleks-samfunnsfag-kap1");
+        trace.GetProperty("searchFilter").GetProperty("query").GetString()
+            .Should().Contain("NOT _exists_:Subject OR Subject:naturfag");
+    }
+
+    [Test]
+    public async Task Preview_endpoint_audits_an_existing_publication_by_id()
+    {
+        var response = await _client.GetAsync("/internal/entitlements/preview?publicationId=560002");
+
+        var body = await response.Content.ReadAsStringAsync();
+        body.Should().Contain("ENTIRE catalog"); // the planted invalid-syntax publication
+    }
+
+    [Test]
     public async Task Why_endpoint_explains_an_allow_with_the_matching_publication()
     {
         var response = await _client.GetAsync("/internal/entitlements/why?userId=alice&contentId=refleks-naturfag-kap1");
