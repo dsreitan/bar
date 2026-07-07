@@ -12,9 +12,13 @@ license setup?* in minutes.
   business models solve this (materialized entitlements, ReBAC), and a
   recommended migration path.
 - **docs/GREENFIELD-LICENSE-SYSTEM.md** — if we redesigned how we sell from
-  scratch: an architecture for pay-per-use, four other packaging models
-  (site license, seats, credits, curated packs), and the primitives that
-  make the pricing model a config change instead of a rewrite.
+  scratch: an architecture for pay-per-use (including the login-per-day
+  variant, validated), four other packaging models (site license, seats,
+  credits, curated packs), and the primitives that make the pricing model a
+  config change instead of a rewrite.
+- **docs/TODO.md** — the action list: no-regret work to start now, before
+  any commercial-model decision, plus the conversations to open and what
+  stays decision-gated.
 - **reference/** — the production `TagLicenseService` and tests this POC is
   derived from.
 

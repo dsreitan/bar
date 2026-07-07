@@ -142,6 +142,70 @@ shape what gets made — decide whether that's a feature); and sales
 compensation. None of these are engineering problems, all of them will land
 on the roadmap.
 
+## Model A′ — login-based pay-per-use, daily reset (evaluated)
+
+The variant we have actually looked at: charge per **login, counted at most
+once per user per day**. Effectively "pay per active user-day", content-blind.
+
+**What it gets right — and it gets a lot right:**
+
+- **The daily reset is the smart part.** It makes the unit idempotent by
+  construction: reloads, flaky wifi, bots, restless clicking — none of it can
+  cost more than 1 per user per day. Cost has a natural hard ceiling
+  (enrolled users × school days) that a procurement officer can compute on a
+  napkin. This is the same property Model A had to engineer via caps; here
+  it's free.
+- **Minimal engineering.** One event type, and it already exists (Feide
+  login). No content instrumentation, no billable-unit debates per feature.
+- **Smallest possible privacy footprint.** We bill on *presence*, not on
+  what a child read. The DPA conversation is as easy as usage billing gets.
+- **Back-testable today.** Login history already exists — we can compute
+  ghost invoices for last school year against real customers *now*, with
+  zero new instrumentation, and compare against what they actually paid.
+  No other model offers a free retroactive pilot.
+
+**Where it distorts — two forces pulling in opposite directions:**
+
+1. **Overcounting: a login is not use.** If the platform is also a portal —
+   messages, homework overview, calendar — a teacher who checks messages and
+   opens no licensed content still bills. With SSO and long-lived sessions
+   the definition frays further: is a restored session at 08:01 a "login"?
+   Auto-login on shared devices? Every ambiguity becomes an invoice dispute,
+   and "we were charged for logins, not for learning materials" is a bad
+   sentence in a municipal renewal meeting.
+2. **Undercounting: the projector problem.** Standard Norwegian classroom
+   practice — one teacher logs in, projects, thirty students consume the
+   content. One user-day of billing for thirty user-days of value. Schools
+   optimizing cost will (rationally!) teach this pattern, and the model
+   *rewards* exactly the usage we can least monetize. Seat and site models
+   don't care; login-billing bleeds from it.
+
+Also structurally: content-blindness means **no internal distribution data**
+— royalties, editorial priorities and renewal arguments ("your schools used
+71% of the catalog") all need per-content usage anyway. If we meter content
+for those purposes regardless (and we should — the spine says meter
+everything), the "simplicity" advantage of billing on logins alone shrinks
+to just the billing rule, while keeping both distortions above.
+
+**Verdict:** viable as a *pilot billing rule*, wrong as the destination. The
+daily-reset idea deserves to survive; the login trigger doesn't. One small
+change fixes the overcount and keeps every good property: count a user-day
+only when the user **opens at least one piece of licensed content that day**
+("daily active use" instead of "login") — same idempotency, same ceiling,
+same privacy posture, same back-testability (if content-open history
+exists), but invoices say "used learning materials" instead of "logged in".
+That lands you within arm's reach of Model A's unique-(user, product)-per-
+period unit, which additionally fixes internal distribution. The projector
+undercount has no metering fix — it is a pricing-level decision (price
+per-teacher-day higher than per-student-day, or accept it as the cost of
+classroom reality in the price point).
+
+Recommended validation before any leadership decision: run the free
+back-test — last year's logins × candidate price points vs. actual invoices
+per municipality — and publish the spread. If the numbers embarrass either
+side (heavy-use schools 4× current price, or the whole cohort at 0.3×),
+that's the conversation to have *before* a pilot, not after.
+
 ## Model B — site license ("Spotify for schools")
 
 Whole catalog, per school or municipality, price by enrollment size (Feide
@@ -199,16 +263,17 @@ because *every* model needs the catalog and products anyway.
 
 ## Comparison
 
-| | A. Pay per use (capped) | B. Site license | C. Seats | D. Credits | E. Packs |
-|---|---|---|---|---|---|
-| Cost predictability for buyer | medium (cap helps) | **best** | good | **best** | good |
-| Matches value delivered | **best** | poor | medium | good | medium |
-| Tender/procurement fit | hard without caps | **easiest** | easy | **easy + flexible** | easy |
-| Read-path complexity | trivial | **trivial** | low | low | low |
-| New engineering risk | **billing pipeline** | none | seat counts | credit ledger | none |
-| Where incidents land | invoices | renewals | seat disputes | unlock UX | catalog curation |
-| Sales friction | **lowest** | low | medium | low | medium |
-| Migration from today | big | medium | **small** | medium | **smallest** |
+| | A. Pay per use (capped) | A′. Login/day | B. Site license | C. Seats | D. Credits | E. Packs |
+|---|---|---|---|---|---|---|
+| Cost predictability for buyer | medium (cap helps) | good (hard ceiling) | **best** | good | **best** | good |
+| Matches value delivered | **best** | poor (portal & projector distortions) | poor | medium | good | medium |
+| Tender/procurement fit | hard without caps | medium (computable ceiling) | **easiest** | easy | **easy + flexible** | easy |
+| Read-path complexity | trivial | **trivial** | **trivial** | low | low | low |
+| New engineering risk | **billing pipeline** | **lowest** (events exist) | none | seat counts | credit ledger | none |
+| Where incidents land | invoices | "what counts as a login" disputes | renewals | seat disputes | unlock UX | catalog curation |
+| Sales friction | **lowest** | **lowest** | low | medium | low | medium |
+| Migration from today | big | **small** (billing only) | medium | **small** | medium | **smallest** |
+| Royalty/insight data | **yes** | no (content-blind) | via metering | via metering | via metering | via metering |
 
 ## Recommendation
 
