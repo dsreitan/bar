@@ -11,6 +11,10 @@ license setup?* in minutes.
 - **docs/ALTERNATIVE-LICENSE-MODELS.md** — how other companies with flexible
   business models solve this (materialized entitlements, ReBAC), and a
   recommended migration path.
+- **docs/GREENFIELD-LICENSE-SYSTEM.md** — if we redesigned how we sell from
+  scratch: an architecture for pay-per-use, four other packaging models
+  (site license, seats, credits, curated packs), and the primitives that
+  make the pricing model a config change instead of a rewrite.
 - **reference/** — the production `TagLicenseService` and tests this POC is
   derived from.
 
