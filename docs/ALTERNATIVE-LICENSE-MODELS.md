@@ -139,6 +139,37 @@ Costs, honestly:
 4. The reasons/telemetry keep working — the ledger stores provenance
    (which publication, which rule version), so traces stay explainable.
 
+## Constraint: we don't own the license system or the CMS
+
+The BFF team controls neither the system issuing licenses nor the CMS holding
+content — so any design requiring bulk nightly dumps of "everything" is
+suspect. Three things keep this constraint from blocking the direction:
+
+- **The request-time POC needs nothing new.** Its three inputs — the user's
+  publication ids, the publication registry, and one content item's tags —
+  are exactly what the BFF already fetches per request today.
+- **The scale is smaller than it looks.** Materialization is per
+  *publication* (the registry: small, mostly static, already cached), never
+  per user license — thousands of licenses are irrelevant because a license
+  is just a list of publication ids resolved at request time. And the
+  content side needs only each item's license-relevant tags: a few short
+  strings per item, tens of megabytes for hundreds of thousands of items.
+  Compute is a non-issue — the pure core evaluates millions of checks per
+  second, so publications × catalog is minutes on one machine.
+- **The content-tag index can be built without CMS cooperation.** In order
+  of increasing upstream involvement: (1) accumulate it from live traffic —
+  every request the BFF serves teaches it one content item's tags, so the
+  index converges on all content anyone actually uses; (2) ask the CMS team
+  for a tags-only export or search endpoint (the KBART-holdings ask — small
+  and standard); (3) content-changed webhooks if they exist. Option 1 also
+  powers the linter's dead-grant check with zero dependencies: the observed
+  tag vocabulary is the content vocabulary.
+
+Note the linter's highest-value checks — invalid descriptor syntax
+(fail-open!), unknown keys, empty publications, license references to
+unknown publication ids — need **only** the publication registry and license
+data the BFF already receives. They can run today.
+
 ## When ReBAC (Zanzibar-style) is the better answer
 
 If the roadmap grows *relations* — teacher shares a resource with a class,
