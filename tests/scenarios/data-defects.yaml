@@ -1,0 +1,64 @@
+# The suspect list from ARCHITECTURE.md, pinned as scenarios. In production
+# every one of these is silent; here each one must show up in the trace.
+
+- name: SUSPECT 1 - publication id missing from the registry grants nothing and is reported in the trace
+  publications: []
+  unknownPublicationIds: [551909]
+  content:
+    LearningMaterial: [multi]
+  expect: deny
+  reason: FAIL_PublicationsNoMatchingValues
+  because: "publication 551909 on the user's license is NOT in the publication registry"
+
+- name: SUSPECT 1 variant - the dropped id is reported even when another publication grants access
+  publications: ["LearningMaterial=multi"]
+  unknownPublicationIds: [551909]
+  content:
+    LearningMaterial: [multi]
+  expect: allow
+  because: "publication 551909 on the user's license is NOT in the publication registry"
+
+- name: SUSPECT 3 - invalid descriptor syntax fails open (intended policy, must be visible in the trace)
+  publications: ["LearningMaterial=multi,Subject=matematikk"] # comma instead of semicolon
+  content:
+    LearningMaterial: [vivo]
+  expect: allow
+  reason: OK_PublicationsInvalidSyntax
+  because: "invalid syntax"
+
+- name: SUSPECT 4a - descriptor key outside the tag vocabulary makes the publication empty, not invalid
+  publications: ["product=pilot,skillsho"]
+  content:
+    LearningMaterial: [pilot]
+  expect: deny
+  because: "unknown keys: product"
+
+- name: SUSPECT 4b - content label keys outside the license vocabulary are dropped and reported
+  publications: ["LearningMaterial=jul-i-svingen"]
+  content:
+    LearningMaterial: [jul-i-svingen]
+    SeasonalEvent: [jul]
+    EducationalRole: [teacher]
+  expect: allow
+  because: "not a license-relevant tag type"
+
+- name: empty descriptor is valid syntax but grants nothing
+  publications: [""]
+  content:
+    LearningMaterial: [multi]
+  expect: deny
+  because: "zero usable constraints"
+
+- name: descriptor of only garbage characters normalizes to empty and grants nothing
+  publications: ["!#%&()@{[]}...."]
+  content:
+    LearningMaterial: [multi]
+  expect: deny
+  because: "zero usable constraints"
+
+- name: no license at all is denied on licensed content
+  publications: []
+  content:
+    LearningMaterial: [multi]
+  expect: deny
+  reason: FAIL_PublicationsNoMatchingValues

@@ -90,10 +90,13 @@ bugs live in the impure assembly around it, and almost all of them are
    bug, two parse paths with different normalization is exactly the kind of
    divergence that produces "the values look identical but don't match."
 3. **Invalid descriptor syntax fails open** (rule 5): a malformed descriptor
-   grants access to *everything*. Meanwhile a well-formed-but-wrong
-   descriptor fails closed. So the failure gradient is inverted: the worse
-   the data, the more access. At minimum this belongs in the linter; whether
-   it should stay fail-open is a policy question to surface.
+   grants access to *everything*. This is **intended policy** — a
+   misconfiguration must never lock paying users out of content. The policy
+   is sound *given a compensating control*: the blast radius (whole-catalog
+   access for the affected users, silently) is acceptable only while the
+   defect is short-lived, so the linter must alert on invalid descriptors
+   and the trace must mark fail-open grants — which turns an open-ended
+   silent hole into a bounded, visible one.
 4. **Key-vocabulary coupling.** A descriptor key with no `TagType`
    counterpart silently vanishes on parse (`product=pilot` → empty
    publication), and `ToLicenseTagSet` silently drops content label keys with
@@ -210,8 +213,12 @@ invariants that must hold for *any* combination:
   revokes access to anything (holds because the model is purely additive —
   first-success-wins, no negation; this is the "bought more, now less
   works" bug class).
-- **Publication keys restrict:** adding a key to a descriptor never grants
-  access to more content.
+- **Extending a descriptor:** a segment with a *new* key adds a constraint
+  and never grants more — provided key overlap with the content already
+  existed (without overlap it can create the first overlap and flip deny to
+  allow); a segment reusing an *existing* key merges values into it and
+  never revokes. (The property suite discovered this split on its first
+  run: duplicate keys merge, so "adding a key" can widen.)
 - **Hierarchy:** a publication value `v` covers content `v/x…` for any
   suffix; `v` never covers `vx` (boundary); a child value never covers
   parent content.
@@ -324,10 +331,16 @@ valid license"):
   to a dedicated entitlement service by construction; the scenario corpus
   is the portable spec if it moves. What must not happen is a second,
   divergent implementation of matching elsewhere.
-- **Fail-open decisions (rules 4 and 5, null content values)** — kept as-is
-  in the POC so the spec matches production, but flagged in the spec as
-  owned policy decisions. Changing them is a product conversation the trace
-  and linter will finally make evidence-based.
+- **Fail-open decisions (rules 4 and 5, null content values)** — confirmed
+  intended: a misconfiguration must degrade toward too much access, never
+  toward locking a paying user out. Kept exactly as-is in the POC. The
+  linter and the trace are the compensating controls that keep fail-open
+  states short-lived and visible instead of silent.
+- **An alternative model entirely** — materialized entitlements ("sell
+  predicates, serve sets"), as used by Steam, Microsoft 365, academic
+  publishing (KBART holdings) and streaming rights pipelines: see
+  docs/ALTERNATIVE-LICENSE-MODELS.md. The pure core built here is that
+  model's materializer engine, so this POC is step one of that path too.
 - **Caching** — out of scope; if added, cache *inputs* (publication
   registry, license snapshots), never verdicts, or the `why` endpoint lies.
   Verdict caching, if ever needed, keys on input hashes + rule version.

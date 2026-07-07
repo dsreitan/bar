@@ -1,0 +1,40 @@
+# Open-content gates (spec rules 1-4). These are policy decisions, not code details:
+# each scenario here pins one row of the spec table.
+
+- name: content with no tags at all is open for everyone
+  publications: []
+  content: {}
+  expect: allow
+  reason: OK_ContentOpen
+
+- name: content priced free is open regardless of license
+  publications: []
+  content:
+    Pricing: [free]
+  expect: allow
+  reason: OK_ContentOpen
+  because: "Pricing=free"
+
+- name: frittstaaende learning material is open regardless of license
+  publications: []
+  content:
+    LearningMaterial: [frittstaaende]
+  expect: allow
+  reason: OK_ContentOpen
+  because: "LearningMaterial=frittstaaende"
+
+- name: content missing LearningMaterial, LearningComponent and Isbn is open (under-tagged content becomes free - see suspect 5)
+  publications: []
+  content:
+    Subject: [norsk]
+    ContentType: [aarsplan]
+  expect: allow
+  reason: OK_ContentTagsMissingRequired_LM_LC_ISBN
+
+- name: feature flag LicenseCheckNone bypasses everything
+  publications: []
+  licenseCheckDisabled: true
+  content:
+    LearningMaterial: [multi]
+  expect: allow
+  reason: OK_FeatureFlag

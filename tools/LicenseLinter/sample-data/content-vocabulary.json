@@ -1,0 +1,6 @@
+{
+  "LearningMaterial": ["multi", "refleks", "salto", "vivo", "salaby-skole", "veien", "kontekst", "explore"],
+  "LearningComponent": ["fagrom", "bokstoette", "ferdigheter", "inspo"],
+  "Subject": ["naturfag", "samfunnsfag", "matematikk", "norsk", "musikk", "krle", "kunst-og-haandverk"],
+  "ContentStructure": ["veien-til-toppidrett/oevelser", "veien-til-toppidrett/teori"]
+}

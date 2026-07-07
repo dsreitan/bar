@@ -1,0 +1,41 @@
+# Hierarchical value matching: a publication value is a root that covers all
+# descendant content values, with '/' as the boundary.
+
+- name: publication root covers descendant content
+  publications: ["LearningMaterial=veien;ContentStructure=veien-til-toppidrett"]
+  content:
+    LearningMaterial: [veien]
+    ContentStructure: [veien-til-toppidrett/oevelser]
+  expect: allow
+  reason: OK_ContentTagsMatching
+  because: "'veien-til-toppidrett' covers 'veien-til-toppidrett/oevelser'"
+
+- name: different branch is denied
+  publications: ["LearningMaterial=veien;ContentStructure=veien-til-toppidrett"]
+  content:
+    LearningMaterial: [veien]
+    ContentStructure: [annet-emne/oevelser]
+  expect: deny
+  because: "ContentStructure FAILED"
+
+- name: slash is a boundary - prefix without slash is not a match
+  publications: ["LearningMaterial=salaby"]
+  content:
+    LearningMaterial: [salaby-skole]
+  expect: deny
+  reason: FAIL_PublicationsNoMatchingValues
+
+- name: child publication does not grant parent content
+  publications: ["ContentType=samhandling/bingo"]
+  content:
+    LearningMaterial: [multi]
+    ContentType: [samhandling]
+  expect: deny
+
+- name: deep descendant is covered by the root
+  publications: ["LearningMaterial=multi;ContentType=samhandling"]
+  content:
+    LearningMaterial: [multi]
+    ContentType: [samhandling/bingo/vinter]
+  expect: allow
+  reason: OK_ContentTagsMatching

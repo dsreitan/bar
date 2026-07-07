@@ -1,0 +1,9 @@
+[
+  { "id": 540200, "name": "Refleks samfunnsfag", "descriptor": "LearningMaterial=refleks;LearningComponent=fagrom,bokstoette;Subject=samfunnsfag" },
+  { "id": 540217, "name": "Refleks naturfag", "descriptor": "LearningMaterial=refleks;LearningComponent=fagrom,bokstoette;Subject=naturfag" },
+  { "id": 560001, "name": "Multi", "descriptor": "LearningMaterial=multi" },
+  { "id": 560002, "name": "Salto (planted: invalid syntax)", "descriptor": "LearningMaterial=salto,Subject=matematikk" },
+  { "id": 560003, "name": "Pilot (planted: unknown key)", "descriptor": "product=pilot,skillsho" },
+  { "id": 560004, "name": "Tom publikasjon (planted: empty)", "descriptor": "" },
+  { "id": 560005, "name": "Vivo (planted: typo in value)", "descriptor": "LearningMaterial=viov" }
+]

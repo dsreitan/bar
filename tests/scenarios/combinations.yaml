@@ -1,0 +1,50 @@
+# Multiple publications on one license: purely additive, first match wins.
+# Mirrors the production "custom publication mix" cases.
+
+- name: any one of several publications grants access
+  publications:
+    - "LearningMaterial=salto"
+    - "LearningMaterial=vivo;LearningComponent=fagrom"
+    - "LearningMaterial=refleks;Subject=naturfag"
+  content:
+    LearningMaterial: [vivo]
+    LearningComponent: [fagrom]
+  expect: allow
+  reason: OK_ContentTagsMatching
+
+- name: subject-split licenses stay split - samfunnsfag licence does not open naturfag content
+  publications:
+    - "LearningMaterial=refleks;LearningComponent=fagrom,bokstoette;Subject=samfunnsfag"
+  content:
+    LearningMaterial: [refleks]
+    Subject: [naturfag]
+  expect: deny
+  because: "Subject FAILED (pub: samfunnsfag; content: naturfag)"
+
+- name: the naturfag half of the same split matches
+  publications:
+    - "LearningMaterial=refleks;LearningComponent=fagrom,bokstoette;Subject=naturfag"
+  content:
+    LearningMaterial: [refleks]
+    Subject: [naturfag]
+  expect: allow
+  reason: OK_ContentTagsMatching
+
+- name: none of several publications matching is denied with the full comparison trace
+  publications:
+    - "LearningMaterial=salto"
+    - "LearningMaterial=multi;Subject=matematikk"
+  content:
+    LearningMaterial: [vivo]
+  expect: deny
+  reason: FAIL_PublicationsNoMatchingValues
+
+- name: buying more never breaks what worked before (monotonicity, the 'bought more now less works' bug class)
+  publications:
+    - "LearningMaterial=multi"
+    - "LearningMaterial=vivo;Subject=naturfag"
+    - "Subject=samfunnsfag"
+  content:
+    LearningMaterial: [multi]
+  expect: allow
+  reason: OK_ContentTagsMatching

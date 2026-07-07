@@ -1,0 +1,95 @@
+# The core matching rule, one publication at a time:
+# K = keys(publication) ∩ keys(content); access iff K is non-empty and every key
+# in K has some content value covered by some publication value.
+# Ported from the production TagLicenseServiceTests.TestDataSinglePublications.
+
+- name: exact single-key match
+  publications: ["LearningMaterial=explore"]
+  content:
+    LearningMaterial: [explore]
+  expect: allow
+  reason: OK_ContentTagsMatching
+
+- name: multi-value publication matches on any value
+  publications: ["LearningMaterial=salto,multi"]
+  content:
+    LearningMaterial: [salto]
+  expect: allow
+  reason: OK_ContentTagsMatching
+
+- name: multi-value content matches on any value
+  publications: ["LearningMaterial=salto"]
+  content:
+    LearningMaterial: [salaby, salto]
+  expect: allow
+  reason: OK_ContentTagsMatching
+
+- name: two-key publication matches when both keys match
+  publications: ["LearningMaterial=relevans;Subject=naturfag"]
+  content:
+    LearningMaterial: [relevans]
+    Subject: [naturfag]
+  expect: allow
+  reason: OK_ContentTagsMatching
+
+- name: wrong learning material is denied
+  publications: ["LearningMaterial=multi"]
+  content:
+    LearningMaterial: [explore]
+  expect: deny
+  reason: FAIL_PublicationsNoMatchingValues
+  because: "LearningMaterial FAILED"
+
+- name: matching material but wrong subject is denied - every intersected key must match
+  publications: ["LearningMaterial=multi;Subject=matematikk"]
+  content:
+    LearningMaterial: [multi]
+    Subject: [naturfag]
+  expect: deny
+  reason: FAIL_PublicationsNoMatchingValues
+  because: "Subject FAILED"
+
+- name: publication key the content does not carry is ignored (constraints bind only on the intersection)
+  publications: ["LearningMaterial=kontekst;Differentiation=basis"]
+  content:
+    LearningMaterial: [kontekst]
+  expect: allow
+  reason: OK_ContentTagsMatching
+
+- name: content key the publication does not constrain is ignored
+  publications: ["LearningMaterial=kontekst"]
+  content:
+    LearningMaterial: [kontekst]
+    Differentiation: [basis]
+  expect: allow
+  reason: OK_ContentTagsMatching
+
+- name: no key overlap at all is denied
+  publications: ["Subject=naturfag"]
+  content:
+    LearningMaterial: [multi]
+  expect: deny
+  because: "no tag key in common"
+
+- name: any single-key overlap suffices - a subject-wide publication opens all naturfag content (the big lever)
+  publications: ["Subject=naturfag"]
+  content:
+    LearningMaterial: [multi]
+    Subject: [naturfag]
+  expect: allow
+  reason: OK_ContentTagsMatching
+
+- name: descriptor keys and values are case-insensitive
+  publications: ["Learningcomponent=Salaby;Learningmaterial=SALABY-SKOLE"]
+  content:
+    LearningComponent: [salaby]
+    LearningMaterial: [salaby-skole]
+  expect: allow
+  reason: OK_ContentTagsMatching
+
+- name: content label keys are case-insensitive too (single shared normalizer)
+  publications: ["LearningMaterial=salaby-skole"]
+  content:
+    learningmaterial: [Salaby-Skole]
+  expect: allow
+  reason: OK_ContentTagsMatching
